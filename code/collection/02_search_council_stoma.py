@@ -58,57 +58,77 @@ def load_tenants(tenants_csv, filter_tenants=None):
 def extract_hit_details(page, tenant, keyword):
     """
     検索結果ページから個別ヒットの詳細（会議名、日付、議事録URL）を抽出する。
-    URLはDOMから直接取得する（クリック遷移なし・高速）。
+    URLはクリック→遷移先URL取得→再検索のループで取得する。
+    a.link-minuteには議事録リンクとページリンクが交互に存在するため、
+    tr.hit-schedule内のtd[2]のリンクだけを対象にする。
     """
+    # First: extract row data via evaluate (fast, no navigation)
+    row_data = page.evaluate('''() => {
+        const results = [];
+        document.querySelectorAll('tr.hit-schedule').forEach(row => {
+            const tds = row.querySelectorAll('td');
+            const link = tds[2]?.querySelector('a.link-minute');
+            if (!link) return;
+            results.push({
+                meeting: tds[1]?.innerText?.trim() || '',
+                date: link?.innerText?.trim() || '',
+                hits: parseInt((tds[3]?.innerText?.match(/(\d+)/) || [0,0])[1]),
+            });
+        });
+        return results;
+    }''')
+
+    if not row_data:
+        return []
+
+    # Second: get URL for each row by re-searching and clicking the nth link
+    search_url = SEARCH_URL_TEMPLATE.format(tenant=tenant)
     details = []
-    base = BASE_URL.format(tenant=tenant)
-    rows = page.query_selector_all('tr.hit-schedule')
 
-    for row in rows:
+    for i, rd in enumerate(row_data):
+        minute_url = ""
         try:
-            tds = row.query_selector_all('td')
-            if len(tds) < 3:
-                continue
+            # Re-search to get a fresh page
+            page.goto(search_url, timeout=20000, wait_until="domcontentloaded")
+            time.sleep(1)
+            inp = page.query_selector('input#se-keyword-value')
+            if inp:
+                inp.fill(keyword)
+                btn = page.query_selector('button#btn-search')
+                if btn:
+                    btn.click()
+                    time.sleep(3)
 
-            meeting = tds[1].inner_text().strip()
-            link_el = tds[2].query_selector('a.link-minute')
-            if not link_el:
-                continue
+                    # Click the ith visible link (td[2] links only)
+                    # Use evaluate to find the correct link index in all a.link-minute
+                    idx = page.evaluate(f'''() => {{
+                        const rows = document.querySelectorAll('tr.hit-schedule');
+                        if ({i} >= rows.length) return -1;
+                        const link = rows[{i}].querySelector('td:nth-child(3) a.link-minute');
+                        if (!link) return -1;
+                        const allLinks = Array.from(document.querySelectorAll('a.link-minute'));
+                        return allLinks.indexOf(link);
+                    }}''')
 
-            date_text = link_el.inner_text().strip()
-            hit_count_text = tds[3].inner_text().strip() if len(tds) > 3 else ""
-            hit_num = re.search(r'(\d+)', hit_count_text)
-            hits_in_meeting = int(hit_num.group(1)) if hit_num else 0
-
-            # Extract URL from DOM without clicking
-            minute_url = ""
-            # 1) Try href attribute
-            href = link_el.get_attribute('href') or ""
-            if href and href != "#" and not href.startswith("javascript:"):
-                minute_url = base + href if not href.startswith("http") else href
-            else:
-                # 2) Try onclick attribute for council_id/schedule_id
-                onclick = link_el.get_attribute('onclick') or ""
-                if onclick:
-                    ids = re.findall(r'(\d+)', onclick)
-                    if len(ids) >= 2:
-                        minute_url = f"{base}MinuteView.html?council_id={ids[0]}&schedule_id={ids[1]}&is_search=true"
-                if not minute_url:
-                    # 3) Try resolved href via JS
-                    resolved = link_el.evaluate("el => el.href || ''")
-                    if resolved and "MinuteView" in resolved:
-                        minute_url = resolved
-
-            details.append({
-                "tenant": tenant,
-                "keyword": keyword,
-                "meeting": meeting,
-                "date": date_text,
-                "hits_in_meeting": hits_in_meeting,
-                "minute_url": minute_url,
-            })
+                    if idx >= 0:
+                        locator = page.locator('a.link-minute').nth(idx)
+                        locator.click(force=True, timeout=5000)
+                        time.sleep(1)
+                        if "MinuteView" in page.url:
+                            minute_url = page.url
         except Exception:
-            continue
+            pass
+
+        details.append({
+            "tenant": tenant,
+            "keyword": keyword,
+            "meeting": rd["meeting"],
+            "date": rd["date"],
+            "hits_in_meeting": rd["hits"],
+            "minute_url": minute_url,
+        })
+
+    return details
 
     return details
 
@@ -252,6 +272,101 @@ def append_details(detail_csv, details, write_header=False):
         writer.writerows(details)
 
 
+def load_hit_tenants(output_csv):
+    """既存results CSVからヒットがあったテナント名のセットを返す"""
+    tenants = set()
+    if not output_csv.exists():
+        return tenants
+    with open(output_csv, encoding="utf-8") as f:
+        for row in csv.DictReader(f):
+            if int(row["hit_count"]) > 0:
+                tenants.add(row["tenant"])
+    return tenants
+
+
+def load_details_completed(detail_csv):
+    """既存details CSVから取得済みテナント名のセットを返す"""
+    done = set()
+    if not detail_csv.exists():
+        return done
+    with open(detail_csv, encoding="utf-8") as f:
+        for row in csv.DictReader(f):
+            done.add(row["tenant"])
+    return done
+
+
+def run_details_only(args):
+    """既存results CSVのヒットありテナントだけdetailsを取得する"""
+    hit_tenant_names = load_hit_tenants(OUTPUT_CSV)
+    if not hit_tenant_names:
+        print("No hit tenants found in results CSV.")
+        return
+
+    # Load all tenants and filter to those with hits
+    filter_tenants = set(args.tenant.split(",")) if args.tenant else None
+    all_tenants = load_tenants(TENANTS_CSV, filter_tenants)
+    target = [t for t in all_tenants if t["tenant"] in hit_tenant_names]
+
+    if args.test:
+        target = target[:args.test]
+
+    # Resume: skip tenants already in details CSV
+    if args.fresh:
+        completed = set()
+        append_details(DETAIL_CSV, [], write_header=True)
+    else:
+        completed = load_details_completed(DETAIL_CSV)
+        if not DETAIL_CSV.exists():
+            append_details(DETAIL_CSV, [], write_header=True)
+
+    remaining = [t for t in target if t["tenant"] not in completed]
+
+    print(f"Mode: details-only")
+    print(f"Hit tenants: {len(hit_tenant_names)}")
+    print(f"Already have details: {len(completed)}")
+    print(f"Remaining: {len(remaining)}")
+    print(f"Output: {DETAIL_CSV}")
+    print()
+
+    if not remaining:
+        print("All hit tenants already have details. Use --fresh to re-run.")
+        return
+
+    total_details = 0
+
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=True,
+                                    args=["--disable-blink-features=AutomationControlled"])
+        context = browser.new_context(
+            user_agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+                       "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+        )
+        context.add_init_script(
+            'Object.defineProperty(navigator, "webdriver", {get: () => undefined})'
+        )
+
+        for i, tenant_info in enumerate(remaining):
+            label = f"[{i+1}/{len(remaining)}]"
+            print(f"{label} {tenant_info['municipality']} ({tenant_info['tenant']})...", end=" ", flush=True)
+
+            _, details = search_tenant(context, tenant_info, collect_details=True)
+
+            if details:
+                append_details(DETAIL_CSV, details)
+                total_details += len(details)
+                print(f"details:{len(details)}", end="")
+            else:
+                print("no details", end="")
+            print()
+
+            time.sleep(args.delay)
+
+        browser.close()
+
+    print(f"\nDetails saved: {DETAIL_CSV}")
+    print(f"This run: {len(remaining)} tenants, {total_details} detail records")
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--test", type=int, help="テスト実行：最初のN件のみ")
@@ -259,7 +374,14 @@ def main():
     parser.add_argument("--delay", type=float, default=2.0, help="tenant間の待ち時間（秒）")
     parser.add_argument("--no-details", action="store_true", help="詳細取得をスキップ（高速モード）")
     parser.add_argument("--fresh", action="store_true", help="既存結果を無視してゼロから実行")
+    parser.add_argument("--details-only", action="store_true",
+                        help="既存results CSVのヒットありテナントのみdetails取得（results CSVは更新しない）")
     args = parser.parse_args()
+
+    # --details-only mode: only fetch details for tenants with hits
+    if args.details_only:
+        run_details_only(args)
+        return
 
     filter_tenants = set(args.tenant.split(",")) if args.tenant else None
     tenants = load_tenants(TENANTS_CSV, filter_tenants)
@@ -305,10 +427,14 @@ def main():
     total_errors = 0
 
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=True)
+        browser = p.chromium.launch(headless=True,
+                                    args=["--disable-blink-features=AutomationControlled"])
         context = browser.new_context(
             user_agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
-                       "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                       "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+        )
+        context.add_init_script(
+            'Object.defineProperty(navigator, "webdriver", {get: () => undefined})'
         )
 
         for i, tenant_info in enumerate(remaining):
