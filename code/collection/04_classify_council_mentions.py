@@ -17,13 +17,13 @@ ssp.kaigiroku.net の議事録から、ストーマ関連キーワードを含�
   会議（＝自治体×年度）単位のフラグは meeting_has_A（会議内に rule_label=A が1件以上）。
 
 使い方:
-  python3 scripts/04_classify_council_mentions.py --tenant kitakyushu,saitama
-  python3 scripts/04_classify_council_mentions.py --test 5
-  python3 scripts/04_classify_council_mentions.py --tenant kitakyushu --fresh   # 当該tenantを再取得
+  python3 code/collection/04_classify_council_mentions.py --tenant kitakyushu,saitama
+  python3 code/collection/04_classify_council_mentions.py --test 5
+  python3 code/collection/04_classify_council_mentions.py --tenant kitakyushu --fresh   # 当該tenantを再取得
 
 出力:
-  data/raw/council_minutes/stoma_mentions_classified.csv   （発言単位、1行=キーワードを含む1発言）
-  data/raw/council_minutes/stoma_mentions_progress.csv     （完了tenantの記録、resume用）
+  data/raw/stoma_mentions_classified.csv   （発言単位、1行=キーワードを含む1発言）
+  data/raw/stoma_mentions_progress.csv     （完了tenantの記録、resume用）
 """
 
 import argparse
@@ -39,9 +39,9 @@ import urllib.request
 from datetime import date
 from pathlib import Path
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
 TENANTS_CSV = PROJECT_ROOT / "data" / "master" / "council_search_systems.csv"
-OUT_DIR = PROJECT_ROOT / "data" / "raw" / "council_minutes"
+OUT_DIR = PROJECT_ROOT / "data" / "raw"
 OUTPUT_CSV = OUT_DIR / "stoma_mentions_classified.csv"
 PROGRESS_CSV = OUT_DIR / "stoma_mentions_progress.csv"
 

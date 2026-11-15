@@ -4,10 +4,10 @@
 
 入力:
   references/2026／27 データベース（分部さんお渡し）.xlsx
-  data/raw/council_minutes/stoma_mentions_classified.csv          (04の出力, ssp系)
-  data/raw/council_minutes/stoma_mentions_classified_nonssp.csv   (東大阪市等, 任意)
+  data/raw/stoma_mentions_classified.csv          (04の出力, ssp系)
+  data/raw/stoma_mentions_classified_nonssp.csv   (東大阪市等, 任意)
 出力:
-  output/reports/council_request_revision_timeline_v2.xlsx
+  outputs/reports/council_request_revision_timeline_v2.xlsx
 """
 
 import csv
@@ -21,12 +21,13 @@ from openpyxl.comments import Comment
 from openpyxl.styles import Alignment, Font, PatternFill
 from openpyxl.utils import column_index_from_string, get_column_letter
 
-ROOT = Path(__file__).parent.parent
+ROOT = Path(__file__).resolve().parents[2]
+# 依頼元DB（リポジトリには含めていない。各自ローカルの references/ に置く）
 DB_XLSX = ROOT / "references" / "2026／27 データベース（分部さんお渡し）.xlsx"
-CLASSIFIED = ROOT / "data" / "raw" / "council_minutes" / "stoma_mentions_classified.csv"
-CLASSIFIED_NONSSP = ROOT / "data" / "raw" / "council_minutes" / "stoma_mentions_classified_nonssp.csv"
-CLASSIFIED_KENSAKU = ROOT / "data" / "raw" / "council_minutes" / "stoma_mentions_classified_kensaku.csv"  # 06の出力
-OUT = ROOT / "output" / "reports" / "council_request_revision_timeline_v2.xlsx"
+CLASSIFIED = ROOT / "data" / "raw" / "stoma_mentions_classified.csv"
+CLASSIFIED_NONSSP = ROOT / "data" / "raw" / "stoma_mentions_classified_nonssp.csv"
+CLASSIFIED_KENSAKU = ROOT / "data" / "raw" / "stoma_mentions_classified_kensaku.csv"  # 06の出力
+OUT = ROOT / "outputs" / "reports" / "council_request_revision_timeline_v2.xlsx"
 
 FYS = list(range(2019, 2027))
 SUBMIT_COLS = {2025: "AY", 2024: "BA", 2023: "BC", 2022: "BE", 2021: "BG", 2020: "BI", 2019: "BK"}
@@ -126,7 +127,7 @@ def _parse_speech_date(s):
 
 def build_summary(wb, db):
     """ssp系で一括取得できた市区町村を分母に、改定と要望書・議会発言の前後関係を集計するシート"""
-    progress = ROOT / "data" / "raw" / "council_minutes" / "stoma_mentions_progress.csv"
+    progress = ROOT / "data" / "raw" / "stoma_mentions_progress.csv"
     with open(progress, encoding="utf-8") as f:
         ok = {r["tenant"] for r in csv.DictReader(f) if r["status"] == "ok"}
     keys = set()
@@ -250,7 +251,7 @@ def main():
             other_fys[key].add(fy)
 
     # 進捗ファイルにあるが言及0件のtenantも「検索済み」に含める
-    progress = ROOT / "data" / "raw" / "council_minutes" / "stoma_mentions_progress.csv"
+    progress = ROOT / "data" / "raw" / "stoma_mentions_progress.csv"
     done_tenants = set()
     if progress.exists():
         with open(progress, encoding="utf-8") as f:

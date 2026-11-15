@@ -11,10 +11,10 @@ kensakusystem.jp 系の議事録検索から、ストーマ関連語を含む発
   4. 04 の classify / make_excerpt で判定
 
 使い方：
-  python3 scripts/06_search_kensakusystem.py               # 宇都宮市・大津市
-  python3 scripts/06_search_kensakusystem.py --tenant otsu
+  python3 code/collection/06_search_kensakusystem.py               # 宇都宮市・大津市
+  python3 code/collection/06_search_kensakusystem.py --tenant otsu
 
-出力：data/raw/council_minutes/stoma_mentions_classified_kensaku.csv（04 と同じ列）
+出力：data/raw/stoma_mentions_classified_kensaku.csv（04 と同じ列）
 """
 import argparse
 import csv
@@ -25,10 +25,10 @@ import urllib.parse
 import urllib.request
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent
-OUT = ROOT / "data" / "raw" / "council_minutes" / "stoma_mentions_classified_kensaku.csv"
+ROOT = Path(__file__).resolve().parents[2]
+OUT = ROOT / "data" / "raw" / "stoma_mentions_classified_kensaku.csv"
 
-spec = importlib.util.spec_from_file_location("c04", ROOT / "scripts" / "04_classify_council_mentions.py")
+spec = importlib.util.spec_from_file_location("c04", ROOT / "code" / "collection" / "04_classify_council_mentions.py")
 c04 = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(c04)
 
