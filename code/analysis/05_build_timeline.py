@@ -25,6 +25,7 @@ ROOT = Path(__file__).parent.parent
 DB_XLSX = ROOT / "references" / "2026／27 データベース（分部さんお渡し）.xlsx"
 CLASSIFIED = ROOT / "data" / "raw" / "council_minutes" / "stoma_mentions_classified.csv"
 CLASSIFIED_NONSSP = ROOT / "data" / "raw" / "council_minutes" / "stoma_mentions_classified_nonssp.csv"
+CLASSIFIED_KENSAKU = ROOT / "data" / "raw" / "council_minutes" / "stoma_mentions_classified_kensaku.csv"  # 06の出力
 OUT = ROOT / "output" / "reports" / "council_request_revision_timeline_v2.xlsx"
 
 FYS = list(range(2019, 2027))
@@ -43,14 +44,14 @@ MANUAL_A = {
             ("2026-06-11", "令和8年第3回定例会（第2日）"),
         ],
     },
-    ("栃木県", "宇都宮市"): {
-        "url": "https://www.kensakusystem.jp/utsunomiya/index.html",
-        "meetings": [
-            ("2024-06-14", "令和6年第2回定例会"),
-            ("2026-06-18", "令和8年第2回定例会"),
-        ],
-    },
-    ("滋賀県", "大津市"): {"url": "https://www.kensakusystem.jp/otsu/index.html", "meetings": []},
+}
+
+
+SEARCH_LABEL = {
+    "manual": "人手確認",
+    "higashiosaka": "人手確認",
+    "utsunomiya": "自動判定（kensakusystem系）",
+    "otsu": "自動判定（kensakusystem系）",
 }
 
 
@@ -208,7 +209,7 @@ def build_summary(wb, db):
 
     notes = [
         "定義",
-        "分母：ssp.kaigiroku.net系の検索システムで全会議を取得でき、依頼元DBと突き合わせられた市区町村（県議会、404で未取得の越前市・小郡市・合志市、人手確認の福岡市・宇都宮市・大津市・東大阪市は含まない）",
+        "分母：ssp.kaigiroku.net系の検索システムで全会議を取得でき、依頼元DBと突き合わせられた市区町村（県議会、404で未取得の越前市・小郡市・合志市、ssp系以外で個別に取得した福岡市・宇都宮市・大津市・東大阪市は含まない）",
         "改定：依頼元DBのN列「最新の変更年月日」に日付がある市区町村。最新の1回のみで判定",
         "要望書あり：基準日の年度より前の年度に提出記録がある（同年度の提出は含めない）。要望書データは2019/20〜2025/26",
         "議会発言あり：基準額に触れた議会発言（自動判定のA）が基準日より前にある。2019年度以降の発言に限る",
@@ -225,7 +226,8 @@ def build_summary(wb, db):
 
 def main():
     db = load_db()
-    speeches = load_classified(CLASSIFIED) + load_classified(CLASSIFIED_NONSSP)
+    speeches = (load_classified(CLASSIFIED) + load_classified(CLASSIFIED_NONSSP)
+                + load_classified(CLASSIFIED_KENSAKU))
 
     a_fys = defaultdict(set)
     a_meetings = defaultdict(dict)  # (key, fy) -> {url: (date, meeting)}
@@ -306,7 +308,7 @@ def main():
             len([y for y in a_fys[key] if y >= 2019]),
             *cells,
             ",".join(str(y) for y in old),
-            "人手確認" if tenant == "manual" else "自動判定",
+            SEARCH_LABEL.get(tenant, "自動判定（ssp系）"),
             key,
         ])
     rows.sort(key=lambda r: (r[0] or "", r[1] or ""))
@@ -371,10 +373,10 @@ def main():
     notes = [
         ["表記", "要望書＝JOA要望書提出（依頼元DBの年度別提出フラグ）／議会発言有＝議会で基準額（給付上限額・公費負担上限額等）への言及があった年度／改定＝基準額改定（依頼元DBの最新改定日・過去の変更履歴から）。同じ年度に複数ある場合はセル内で改行して併記"],
         ["色", "緑＝改定のあった年度、橙＝基準額言及のあった年度"],
-        ["リンク", "「議会発言有」を含むセルは、その年度で最初に基準額言及のあった会議の会議録にリンク。同じ年度に複数の会議がある場合は、セルのコメントに全会議の日付・会議名・URLを記載。福岡市・宇都宮市は会議ごとの固定URLがないため検索システムのトップにリンクし、コメントに会議名を記載"],
+        ["リンク", "「議会発言有」を含むセルは、その年度で最初に基準額言及のあった会議の会議録にリンク。同じ年度に複数の会議がある場合は、セルのコメントに全会議の日付・会議名・URLを記載。福岡市は会議ごとの固定URLがないため検索システムのトップにリンクし、コメントに会議名を記載"],
         ["基準額言及の判定", "同一発言内で、ストーマ関連語（ストーマ/ストマ/オストメイト/蓄便袋/蓄尿袋/人工肛門/人工膀胱）の前後150字以内に上限額関連語（基準額・上限額・給付額・公費負担・自己負担・増額・引上げ・見直し・物価高・月額等）がある発言をA判定。間にトイレ/備蓄/避難/便座/洗浄を挟むペア、および「オストメイト対応トイレ」のように設備の修飾語として使われたストーマ関連語は除外。会議内にA発言が1件以上ある年度を「議」とした"],
         ["判定精度", "人手ラベル付き117会議・303発言で、会議単位 precision 0.74 / recall 1.00、発言単位 precision 0.79 / recall 0.89（ルール選択と同じサンプルでの評価のため楽観寄り）。主な誤検出は「ガイドラインの見直し」等の『見直し』、制度説明の中の『自己負担』"],
-        ["対象", "ssp.kaigiroku.net系の議事録検索システムを持つ自治体（自動判定、503テナント中499件取得。越前市・小郡市・合志市・三重県は検索システム側の404で未取得）＋福岡市・宇都宮市・大津市（人手確認）＋東大阪市（別途判定）。それ以外の自治体は未検索。県議会は依頼元DBに行がないため表に含めていない"],
+        ["対象", "ssp.kaigiroku.net系の議事録検索システムを持つ自治体（自動判定、503テナント中499件取得。越前市・小郡市・合志市・三重県は検索システム側の404で未取得）＋宇都宮市・大津市（kensakusystem系、同じルールで自動判定）＋福岡市（人手確認）＋東大阪市（別途判定）。それ以外の自治体は未検索。県議会は依頼元DBに行がないため表に含めていない"],
         ["読み方の注意", "「議」は議事録に残った発言のみ。要望書提出（要）は依頼元DBの記録で、DBの記録漏れがあれば空欄になる。改定年度は依頼元DBの最新改定日・変更履歴の記載に依存し、記載が年月日形式でないものは拾えていない"],
         ["2026/27年度の「要」", "依頼元DB側が未更新のため空欄。提出があっても反映されていない"],
         ["要望書データの出典", "依頼元DB（2026/27データベース）列AW〜BL"],

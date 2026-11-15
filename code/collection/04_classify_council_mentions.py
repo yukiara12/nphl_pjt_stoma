@@ -65,7 +65,8 @@ CAP_TERMS = [
 WINDOW = 150  # 推奨ルール：ストーマ語の前後150文字以内に上限額語
 # ストーマ語と上限額語の間にこれらの語が挟まるペアは数えない（トイレ改修費・備蓄の見直し等の誤検出対策）
 EXCLUDE_BETWEEN = re.compile("トイレ|備蓄|避難|便座|洗浄")
-FACILITY_AFTER = re.compile(r"[・\s]?(対応|(用|専用)?(トイレ|便座|便房|設備|マーク|簡易|仮設|ベッド|多目的|多機能))")
+FACILITY_AFTER = re.compile(r"[・\s]?(対応|化|(用|専用)?(トイレ|便座|便房|設備|マーク|簡易|仮設|ベッド|多目的|多機能))")
+KATAKANA_BEFORE = re.compile(r"[ァ-ヺ]")
 
 DELAY = 1.5  # リクエスト間隔（秒）
 
@@ -187,7 +188,9 @@ def cap_near_stoma(text, window=WINDOW, cap_terms=CAP_TERMS, stoma_terms=STOMA_T
     """ストーマ語の前後 window 文字以内に上限額語があれば (dist, stoma_pos, cap_term) を返す。
     両語の間（両語を含む区間）に exclude の語があるペアは数えない。"""
     # 「オストメイト対応トイレ」「オストメイトトイレ」等の設備の修飾語としての用法は数えない
-    sp = [p for p in _positions(text, stoma_terms) if not FACILITY_AFTER.match(text, p[1])]
+    # 「コストマネジメント」「テストマッチ」のようにカタカナ語の一部として現れる「ストマ」も数えない
+    sp = [p for p in _positions(text, stoma_terms)
+          if not FACILITY_AFTER.match(text, p[1]) and not KATAKANA_BEFORE.match(text[p[0] - 1: p[0]])]
     cp = _positions(text, cap_terms)
     best = None
     for s0, s1, _ in sp:
