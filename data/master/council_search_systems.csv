@@ -666,8 +666,7 @@ prefecture,municipality,url,system_type,kaigiroku_tenant
 三重県,大台町議会,https://ssp.kaigiroku.net/tenant/odai/SpMinuteSearch.html,kaigiroku_ssp,odai
 滋賀県,滋賀県議会,https://www.shigaken-gikai.jp/voices/g08v_search.asp,other,
 滋賀県,滋賀県議会,https://www.shigaken-gikai.jp/voices2/,other,
-滋賀県,大津市議会,http://otsu.gijiroku.com/voices/g08v_search.asp,gijiroku_com,
-滋賀県,大津市議会,http://otsu.gijiroku.com/voices2/,gijiroku_com,
+滋賀県,大津市議会,https://www.kensakusystem.jp/otsu/index.html,kensakusystem,otsu
 滋賀県,彦根市議会,https://www.city.hikone.shiga.dbsr.jp/index.php/,dbsr,
 滋賀県,長浜市議会,https://ssp.kaigiroku.net/tenant/nagahama/MinuteSearch.html,kaigiroku_ssp,nagahama
 滋賀県,近江八幡市議会,https://ssp.kaigiroku.net/tenant/omihachiman/MinuteSearch.html,kaigiroku_ssp,omihachiman
@@ -734,7 +733,7 @@ prefecture,municipality,url,system_type,kaigiroku_tenant
 大阪府,摂津市議会,https://ssp.kaigiroku.net/tenant/settsu/MinuteSearch.html,kaigiroku_ssp,settsu
 大阪府,高石市議会,https://ssp.kaigiroku.net/tenant/takaishi/SpMinuteSearch.html,kaigiroku_ssp,takaishi
 大阪府,藤井寺市議会,https://ssp.kaigiroku.net/tenant/fujiidera/SpMinuteSearch.html,kaigiroku_ssp,fujiidera
-大阪府,東大阪市議会,https://higashiosaka.gijiroku.com/gikai/g08v_search.asp,gijiroku_com,
+大阪府,東大阪市議会,https://higashiosaka.gijiroku.com/gikai/g08v_search.asp,gijiroku_com,higashiosaka
 大阪府,泉南市議会,http://www.db-search.com/sennan-c/index.php/,dbsr,
 大阪府,四條畷市議会,https://ssp.kaigiroku.net/tenant/shijonawate/SpMinuteSearch.html,kaigiroku_ssp,shijonawate
 大阪府,交野市議会,https://ssp.kaigiroku.net/tenant/katano/SpMinuteSearch.html,kaigiroku_ssp,katano
