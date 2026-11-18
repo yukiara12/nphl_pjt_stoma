@@ -2229,10 +2229,6 @@ kadogawa,宮崎県,門川町議会,ストーマ,-1,Page.goto: net::ERR_INTERNET_
 kadogawa,宮崎県,門川町議会,オストメイト,-1,Page.goto: net::ERR_INTERNET_DISCONNECTED at https://ssp.kaigiroku.net/tenant/kadogawa/MinuteSearch.,https://ssp.kaigiroku.net/tenant/kadogawa/MinuteSearch.html,2026-09-22
 kadogawa,宮崎県,門川町議会,蓄便袋,-1,Page.goto: net::ERR_INTERNET_DISCONNECTED at https://ssp.kaigiroku.net/tenant/kadogawa/MinuteSearch.,https://ssp.kaigiroku.net/tenant/kadogawa/MinuteSearch.html,2026-09-22
 kadogawa,宮崎県,門川町議会,蓄尿袋,-1,Page.goto: net::ERR_INTERNET_DISCONNECTED at https://ssp.kaigiroku.net/tenant/kadogawa/MinuteSearch.,https://ssp.kaigiroku.net/tenant/kadogawa/MinuteSearch.html,2026-09-22
-kagoshima,鹿児島県,鹿児島市議会,ストーマ,-1,Page.goto: net::ERR_INTERNET_DISCONNECTED at https://ssp.kaigiroku.net/tenant/kagoshima/MinuteSearch,https://ssp.kaigiroku.net/tenant/kagoshima/MinuteSearch.html,2026-09-22
-kagoshima,鹿児島県,鹿児島市議会,オストメイト,-1,Page.goto: net::ERR_INTERNET_DISCONNECTED at https://ssp.kaigiroku.net/tenant/kagoshima/MinuteSearch,https://ssp.kaigiroku.net/tenant/kagoshima/MinuteSearch.html,2026-09-22
-kagoshima,鹿児島県,鹿児島市議会,蓄便袋,-1,Page.goto: net::ERR_INTERNET_DISCONNECTED at https://ssp.kaigiroku.net/tenant/kagoshima/MinuteSearch,https://ssp.kaigiroku.net/tenant/kagoshima/MinuteSearch.html,2026-09-22
-kagoshima,鹿児島県,鹿児島市議会,蓄尿袋,-1,Page.goto: net::ERR_INTERNET_DISCONNECTED at https://ssp.kaigiroku.net/tenant/kagoshima/MinuteSearch,https://ssp.kaigiroku.net/tenant/kagoshima/MinuteSearch.html,2026-09-22
 kanoya,鹿児島県,鹿屋市議会,ストーマ,-1,Page.goto: net::ERR_INTERNET_DISCONNECTED at https://ssp.kaigiroku.net/tenant/kanoya/MinuteSearch.ht,https://ssp.kaigiroku.net/tenant/kanoya/MinuteSearch.html,2026-09-22
 kanoya,鹿児島県,鹿屋市議会,オストメイト,-1,Page.goto: net::ERR_INTERNET_DISCONNECTED at https://ssp.kaigiroku.net/tenant/kanoya/MinuteSearch.ht,https://ssp.kaigiroku.net/tenant/kanoya/MinuteSearch.html,2026-09-22
 kanoya,鹿児島県,鹿屋市議会,蓄便袋,-1,Page.goto: net::ERR_INTERNET_DISCONNECTED at https://ssp.kaigiroku.net/tenant/kanoya/MinuteSearch.ht,https://ssp.kaigiroku.net/tenant/kanoya/MinuteSearch.html,2026-09-22
@@ -2337,3 +2333,16 @@ taketomi,沖縄県,竹富町議会,ストーマ,-1,Page.goto: net::ERR_INTERNET_
 taketomi,沖縄県,竹富町議会,オストメイト,-1,Page.goto: net::ERR_INTERNET_DISCONNECTED at https://ssp.kaigiroku.net/tenant/taketomi/MinuteSearch.,https://ssp.kaigiroku.net/tenant/taketomi/MinuteSearch.html,2026-09-22
 taketomi,沖縄県,竹富町議会,蓄便袋,-1,Page.goto: net::ERR_INTERNET_DISCONNECTED at https://ssp.kaigiroku.net/tenant/taketomi/MinuteSearch.,https://ssp.kaigiroku.net/tenant/taketomi/MinuteSearch.html,2026-09-22
 taketomi,沖縄県,竹富町議会,蓄尿袋,-1,Page.goto: net::ERR_INTERNET_DISCONNECTED at https://ssp.kaigiroku.net/tenant/taketomi/MinuteSearch.,https://ssp.kaigiroku.net/tenant/taketomi/MinuteSearch.html,2026-09-22
+kagoshima,鹿児島県,鹿児島市議会,ストーマ,0,,https://ssp.kaigiroku.net/tenant/kagoshima/MinuteSearch.html,2026-11-14
+kagoshima,鹿児島県,鹿児島市議会,オストメイト,49,,https://ssp.kaigiroku.net/tenant/kagoshima/MinuteSearch.html,2026-11-14
+kagoshima,鹿児島県,鹿児島市議会,蓄便袋,3,,https://ssp.kaigiroku.net/tenant/kagoshima/MinuteSearch.html,2026-11-14
+kagoshima,鹿児島県,鹿児島市議会,蓄尿袋,1,,https://ssp.kaigiroku.net/tenant/kagoshima/MinuteSearch.html,2026-11-14
+higashiosaka,大阪府,東大阪市議会,ストーマ,11,,https://higashiosaka.gijiroku.com/gikai/g08v_search.asp,2026-11-14
+higashiosaka,大阪府,東大阪市議会,オストメイト,5,,https://higashiosaka.gijiroku.com/gikai/g08v_search.asp,2026-11-14
+higashiosaka,大阪府,東大阪市議会,蓄便袋,0,,https://higashiosaka.gijiroku.com/gikai/g08v_search.asp,2026-11-14
+higashiosaka,大阪府,東大阪市議会,蓄尿袋,0,,https://higashiosaka.gijiroku.com/gikai/g08v_search.asp,2026-11-14
+fukuoka,福岡県,福岡市議会,ストーマ,59,, https://www.city.fukuoka.fukuoka.dbsr.jp/index.php/,2026-11-14
+otsu,滋賀県,大津市議会,ストーマ,21,要検証（コストマネジメント等との誤マッチの疑い、完全一致検索でも長音記号が無視される仕様）,https://www.kensakusystem.jp/otsu/index.html,2026-11-14
+otsu,滋賀県,大津市議会,オストメイト,23,全件トイレ設備関連（オストメイト対応トイレ）の可能性。給付基準額への言及は未確認,https://www.kensakusystem.jp/otsu/index.html,2026-11-14
+otsu,滋賀県,大津市議会,蓄便袋,2,いずれも平成4年・19年のみ。近年の言及なし,https://www.kensakusystem.jp/otsu/index.html,2026-11-14
+otsu,滋賀県,大津市議会,蓄尿袋,2,いずれも平成4年・19年のみ。近年の言及なし,https://www.kensakusystem.jp/otsu/index.html,2026-11-14

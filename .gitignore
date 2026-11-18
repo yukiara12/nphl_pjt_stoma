@@ -5,3 +5,6 @@ __pycache__/
 venv/
 .env
 .ipynb_checkpoints/
+
+# 依頼元資料（公開リポジトリに含めない）
+references/
