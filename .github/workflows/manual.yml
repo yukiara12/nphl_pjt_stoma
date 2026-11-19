@@ -1,0 +1,43 @@
+name: Markdown to Word
+
+on:
+  workflow_dispatch:
+    inputs:
+      file:
+        description: '変換するMarkdownファイルのパス'
+        required: true
+        default: 'members/Suzuki/20261115ヒアリング質問紙.md'
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  convert:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Pandoc
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y pandoc
+
+      - name: Convert Markdown to Word
+        env:
+          INPUT_FILE: ${{ inputs.file }}
+        run: |
+          mkdir -p output
+          filename=$(basename "$INPUT_FILE" .md)
+          pandoc "$INPUT_FILE" \
+            -f gfm \
+            -t docx \
+            -o "output/${filename}.docx"
+
+      - name: Upload Word file
+        uses: actions/upload-artifact@v4
+        with:
+          name: Word-files
+          path: output/*.docx
